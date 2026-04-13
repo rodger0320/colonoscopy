@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大腸鏡結構化報告 PWA</title>
+<meta name="theme-color" content="#1a3a5c">
+<link rel="manifest" href="./manifest.webmanifest">
+<style>
+:root{--bg:#f0f4f8;--card:#fff;--line:#d8e1ea;--text:#1f2937;--muted:#64748b;--accent:#1a3a5c;--accent2:#2b6cb0;--soft:#ebf8ff;--ok:#15803d;--warn:#b45309}
+*{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+.container{max-width:1280px;margin:24px auto;padding:0 16px 40px}.header{background:linear-gradient(135deg,#eef4ff,#fff);border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:0 10px 28px rgba(15,23,42,.06);margin-bottom:18px}
+.header h1{margin:0 0 6px;font-size:30px;color:var(--accent)}.header p{margin:0;color:var(--muted);font-size:14px}.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+button{border:0;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:700;cursor:pointer;background:var(--accent);color:#fff;box-shadow:0 8px 18px rgba(26,58,92,.18)}button.secondary{background:#e2e8f0;color:#1e293b;box-shadow:none}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.card{grid-column:span 12;background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 8px 24px rgba(15,23,42,.04)}
+.card h2{margin:0 0 14px;font-size:20px;color:var(--accent);border-left:4px solid var(--accent2);padding-left:10px}.card h3{margin:0 0 10px;font-size:16px;color:var(--accent)}
+.form-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px 14px}.field{grid-column:span 4;display:flex;flex-direction:column;gap:6px}.field.span-2{grid-column:span 2}.field.span-3{grid-column:span 3}.field.span-6{grid-column:span 6}.field.span-12{grid-column:span 12}
+label{font-size:13px;font-weight:700;color:#334155}input,select,textarea{width:100%;border:1.5px solid #cbd5e0;border-radius:10px;padding:10px 12px;font-size:14px;background:#fff;color:#1a202c}textarea{min-height:96px;resize:vertical}
+.checkbox-group{display:flex;flex-wrap:wrap;gap:8px 12px;padding:10px 12px;border:1.5px solid #cbd5e0;border-radius:10px;background:#fff}.checkbox-group label{font-weight:500;display:flex;align-items:center;gap:6px;margin:0}
+.subgrid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.result-box{background:var(--soft);border:1px solid #bee3f8;border-radius:12px;padding:14px;display:flex;flex-wrap:wrap;gap:12px 24px;font-size:15px}
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700}.badge.ok{background:#dcfce7;color:var(--ok)}.badge.warn{background:#fef3c7;color:var(--warn)}
+.premed-option{display:flex;align-items:center;gap:6px;padding:6px 8px;border:1.5px solid #e2e8f0;border-radius:8px;margin-bottom:6px;background:#f7fafc;cursor:pointer}.premed-option.active{border-color:var(--accent);background:#ebf8ff}
+.pm-num{width:16px;font-size:12px;font-weight:700;color:#94a3b8}.pm-content{font-size:12px;color:#2d3748;display:flex;align-items:center;flex-wrap:wrap;gap:4px;line-height:1.45}
+.busco-btn{padding:2px 8px;font-size:12px;font-weight:700;border:1.5px solid #cbd5e0;border-radius:20px;background:#fff;color:#4a5568;cursor:pointer}.busco-btn.on{background:#2f855a;border-color:#2f855a;color:#fff}
+.dose-input{width:54px;padding:3px 5px;text-align:center;font-size:13px;font-family:monospace;border-radius:6px}.toggle-chip{padding:5px 10px;font-size:12px;font-weight:700;border:1.5px solid #cbd5e0;border-radius:20px;background:#f7fafc;color:#4a5568;cursor:pointer}.toggle-chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.lesion-card{border:1.5px dashed #bfd1e5;border-radius:14px;padding:14px;margin-top:12px;background:#fbfdff}.output-box,.report-preview{width:100%;padding:12px;border:1.5px solid #cbd5e0;border-radius:10px;background:#f7fafc;font-family:"SF Mono","Fira Mono","Courier New",monospace;font-size:13px;line-height:1.65;white-space:pre-wrap}
+.pill-row{display:flex;gap:10px;flex-wrap:wrap}.small-btn{padding:7px 10px;font-size:12px;border-radius:8px}.divider{height:1px;background:#e2e8f0;margin:12px 0}.install-tip{margin-top:12px;padding:10px 12px;border-radius:12px;background:#eef2ff;color:#3730a3;font-size:13px;border:1px solid #c7d2fe}
+@media (max-width:980px){.field,.field.span-2,.field.span-3,.field.span-6{grid-column:span 12}.subgrid-2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1>大腸鏡結構化報告 PWA</h1>
+<p>整合計時器、腸道準備、pre-medication、病灶結構化描述與報告輸出。可離線開啟，部署後可安裝為 App。</p>
+<div class="toolbar">
+<button type="button" onclick="generateAllOutputs()">更新所有摘要</button>
+<button type="button" onclick="window.print()">列印 / 存成 PDF</button>
+<button type="button" class="secondary" onclick="resetAll()">清空表單</button>
+</div>
+<div class="install-tip">此版本已加入 manifest 與 service worker。部署到 HTTPS 網站後，可用瀏覽器安裝成桌面或手機 App。</div>
+</div>
+
+<div class="grid">
+<section class="card"><h2>一、基本資料</h2><div class="form-grid">
+<div class="field"><label>病歷號碼</label><input id="patientId"></div>
+<div class="field"><label>姓名</label><input id="name"></div>
+<div class="field span-2"><label>性別</label><select id="sex"><option value=""></option><option>男</option><option>女</option></select></div>
+<div class="field span-2"><label>年齡</label><input id="age" type="number" min="0"></div>
+<div class="field span-3"><label>檢查日期</label><input id="procedureDate" type="date"></div>
+<div class="field span-3"><label>檢查醫師</label><input id="endoscopist"></div>
+<div class="field span-3"><label>助理人員</label><input id="assistant"></div>
+<div class="field span-3"><label>檢查地點</label><input id="location"></div>
+</div></section>
+
+<section class="card"><h2>二、檢查適應症與術前評估</h2><div class="form-grid">
+<div class="field span-12"><label>適應症（可複選）</label><div class="checkbox-group">
+<label><input type="checkbox" name="indication" value="篩檢/FIT陽性">篩檢/FIT陽性</label>
+<label><input type="checkbox" name="indication" value="監測追蹤">監測追蹤</label>
+<label><input type="checkbox" name="indication" value="症狀評估">症狀評估</label>
+<label><input type="checkbox" name="indication" value="影像異常">影像異常</label>
+<label><input type="checkbox" name="indication" value="治療性檢查">治療性檢查</label>
+</div></div>
+<div class="field span-12"><label>其他適應症說明</label><input id="indicationOther"></div>
+<div class="field span-2"><label>ASA 分級</label><select id="asa"><option value=""></option><option>I</option><option>II</option><option>III</option><option>IV</option></select></div>
+<div class="field span-6"><label>抗凝血 / 抗血小板藥物</label><input id="anticoagulant"></div>
+<div class="field span-2"><label>麻醉方式</label><select id="sedation"><option value=""></option><option>無鎮靜</option><option>Conscious sedation</option><option>Deep sedation</option><option>GA</option></select></div>
+<div class="field span-2"><label>過敏史</label><input id="allergy"></div>
+</div></section>
+
+<section class="card"><h2>三、Pre-medication 與腸道準備</h2><div class="subgrid-2"><div>
+<h3>Pre-medication</h3>
+<div class="premed-option" id="pm-opt-1" onclick="selectPremedOption(1)"><span class="pm-num">1</span><div class="pm-content"><button type="button" class="busco-btn" id="busco-1" onclick="event.stopPropagation();toggleBusco(1)">Busco 10mg IV</button> + Dormicum 1mg IV + Rapifen 0.5mg IV + Propofol <input class="dose-input" id="prop-1" type="number" min="0" oninput="updatePremed()" onclick="event.stopPropagation()"> mg IV</div></div>
+<div class="premed-option" id="pm-opt-2" onclick="selectPremedOption(2)"><span class="pm-num">2</span><div class="pm-content"><button type="button" class="busco-btn" id="busco-2" onclick="event.stopPropagation();toggleBusco(2)">Busco 10mg IV</button> + Dormicum 0.75mg IV + Rapifen 0.375mg IV + Propofol <input class="dose-input" id="prop-2" type="number" min="0" oninput="updatePremed()" onclick="event.stopPropagation()"> mg IV</div></div>
+<div class="premed-option" id="pm-opt-3" onclick="selectPremedOption(3)"><span class="pm-num">3</span><div class="pm-content"><button type="button" class="busco-btn" id="busco-3" onclick="event.stopPropagation();toggleBusco(3)">Busco 10mg IV</button> + Dormicum 0.5mg IV + Rapifen 0.25mg IV + Propofol <input class="dose-input" id="prop-3" type="number" min="0" oninput="updatePremed()" onclick="event.stopPropagation()"> mg IV</div></div>
+<div class="premed-option" id="pm-opt-4" onclick="selectPremedOption(4)"><span class="pm-num">4</span><div class="pm-content">Butylscopolamine 10mg IM</div></div>
+<div class="divider"></div><h3>腸道準備</h3>
+<div class="field span-12" style="margin-bottom:10px"><label>Prep agent</label><div class="pill-row">
+<button type="button" class="toggle-chip" data-group="agent" data-value="Bowklean" onclick="toggleBtn(this)">Bowklean</button>
+<button type="button" class="toggle-chip" data-group="agent" data-value="GI Klean powder" onclick="toggleBtn(this)">GI Klean powder</button>
+<button type="button" class="toggle-chip" data-group="agent" data-value="Castor oil 30cc PO + Dulcolax 5mg 5# PO + Bisacodyl 2# REC" onclick="toggleBtn(this)">Castor oil + Dulcolax + Bisacodyl</button>
+</div></div>
+<div class="form-grid">
+<div class="field span-2"><label>右側</label><select id="bbpsR" onchange="calcBBPS()"><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+<div class="field span-2"><label>橫結腸</label><select id="bbpsT" onchange="calcBBPS()"><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+<div class="field span-2"><label>左側</label><select id="bbpsL" onchange="calcBBPS()"><option value=""></option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+<div class="field span-2"><label>總分</label><input id="bbpsTotal" readonly></div>
+<div class="field span-12"><label>Prep quality</label><div class="pill-row">
+<button type="button" class="toggle-chip" data-group="quality" data-value="Excellent" onclick="toggleBtn(this)">Excellent</button>
+<button type="button" class="toggle-chip" data-group="quality" data-value="Good" onclick="toggleBtn(this)">Good</button>
+<button type="button" class="toggle-chip" data-group="quality" data-value="Fair" onclick="toggleBtn(this)">Fair</button>
+<button type="button" class="toggle-chip" data-group="quality" data-value="Poor" onclick="toggleBtn(this)">Poor</button>
+<button type="button" class="toggle-chip" data-group="quality" data-value="Inadequate" onclick="toggleBtn(this)">Inadequate</button>
+</div></div></div></div>
+<div>
+<h3>Pre-medication 輸出</h3><div id="premed-output" class="output-box">Select an option on the left</div><div class="toolbar" style="margin-top:8px"><button type="button" class="small-btn" id="btn-copy-premed" onclick="copyTextFromElement('premed-output', this)" disabled>Copy Pre-medication</button></div>
+<div class="divider"></div><h3>腸道準備摘要</h3><div id="prep-output" class="output-box">選擇 prep agent、BBPS 與 prep quality 後，這裡會顯示摘要。</div><div class="toolbar" style="margin-top:8px"><button type="button" class="small-btn" id="btn-copy-prep" onclick="copyTextFromElement('prep-output', this)" disabled>Copy Prep</button></div>
+</div></div></section>
+
+<section class="card"><h2>四、檢查時間與完整性</h2><div class="form-grid">
+<div class="field span-3"><label>檢查開始時間</label><input id="startTime" type="time" step="1" onchange="calcTimes()"></div>
+<div class="field span-3"><label>抵達盲腸/最深處時間</label><input id="cecalTime" type="time" step="1" onchange="calcTimes()"></div>
+<div class="field span-3"><label>脾彎曲時間（可選）</label><input id="splenicTime" type="time" step="1" onchange="calcTimes()"></div>
+<div class="field span-3"><label>檢查結束時間</label><input id="endTime" type="time" step="1" onchange="calcTimes()"></div>
+<div class="field span-3"><label>是否到達盲腸</label><select id="cecalReached"><option value=""></option><option>是</option><option>否</option></select></div>
+<div class="field span-3"><label>完整性</label><select id="completeness"><option value=""></option><option>Complete colonoscopy</option><option>Incomplete</option></select></div>
+<div class="field span-6"><label>未完成原因</label><input id="incompleteReason"></div>
+</div>
+<div class="result-box" style="margin-top:14px"><div>Insertion time：<strong id="insertionTime">--</strong></div><div>Proximal inspection：<strong id="proximalTime">--</strong></div><div>Withdrawal time：<strong id="withdrawalTime">--</strong></div><div>Withdrawal time ≥ 6 分鐘：<span id="withdrawalFlag" class="badge warn">待計算</span></div></div>
+<div class="divider"></div><h3>計時摘要</h3><div id="timing-output" class="output-box">輸入檢查時間後，這裡會顯示摘要。</div><div class="toolbar" style="margin-top:8px"><button type="button" class="small-btn" id="btn-copy-timing" onclick="copyTextFromElement('timing-output', this)" disabled>Copy Timing</button></div>
+</section>
+
+<section class="card"><h2>五、病灶發現與描述</h2><div id="lesionContainer"></div><div class="toolbar" style="margin-top:14px"><button type="button" onclick="addLesion()">新增病灶</button></div></section>
+
+<section class="card"><h2>六、其他發現、診斷與建議</h2><div class="form-grid">
+<div class="field span-12"><label>其他發現</label><textarea id="otherFindings"></textarea></div>
+<div class="field span-12"><label>內視鏡診斷</label><textarea id="diagnosis"></textarea></div>
+<div class="field span-12"><label>追蹤與建議</label><textarea id="recommendation"></textarea></div>
+</div></section>
+
+<section class="card"><h2>七、輸出結果</h2><div class="subgrid-2"><div>
+<h3>Colonoscopic Findings</h3><div id="findings-output" class="output-box">填寫病灶資料後，這裡會自動產生 findings。</div><div class="toolbar" style="margin-top:8px"><button type="button" class="small-btn" id="btn-copy-findings" onclick="copyTextFromElement('findings-output', this)" disabled>Copy Findings</button></div>
+<div class="divider"></div><h3>Summary</h3><div id="summary-output" class="output-box">填寫病灶資料後，這裡會自動產生 summary。</div><div class="toolbar" style="margin-top:8px"><button type="button" class="small-btn" id="btn-copy-summary" onclick="copyTextFromElement('summary-output', this)" disabled>Copy Summary</button></div>
+</div><div>
+<h3>完整結構化報告</h3><div id="final-output" class="report-preview">按下上方「更新所有摘要」後，這裡會整理完整報告。</div><div class="toolbar" style="margin-top:8px"><button type="button" class="small-btn" id="btn-copy-final" onclick="copyTextFromElement('final-output', this)" disabled>Copy Full Report</button></div>
+</div></div></section>
+</div></div>
+<script>
+let lesionCount=0,activePremedOption=null; const buscoState={1:false,2:false,3:false}; const premedDrugs={1:{dorm:'1',rapi:'0.5',propId:'prop-1'},2:{dorm:'0.75',rapi:'0.375',propId:'prop-2'},3:{dorm:'0.5',rapi:'0.25',propId:'prop-3'}};
+const LOCATIONS=[{value:'cecum',adjective:'Cecal'},{value:'ascending colon',adjective:'Ascending colonic'},{value:'hepatic flexure',adjective:'Hepatic flexure'},{value:'transverse colon',adjective:'Transverse colonic'},{value:'splenic flexure',adjective:'Splenic flexure'},{value:'descending colon',adjective:'Descending colonic'},{value:'sigmoid colon',adjective:'Sigmoid colonic'},{value:'rectosigmoid junction',adjective:'Rectosigmoid junction'},{value:'rectum',adjective:'Rectal'}];
+function checkedValues(name){return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(el=>el.value)}
+function toggleBtn(btn){const g=btn.dataset.group; document.querySelectorAll(`.toggle-chip[data-group="${g}"]`).forEach(b=>b.classList.remove('active')); btn.classList.add('active'); updatePrepOutput()}
+function getSelected(g){const a=document.querySelector(`.toggle-chip[data-group="${g}"].active`); return a?a.dataset.value:''}
+function selectPremedOption(n){activePremedOption=n; [1,2,3,4].forEach(i=>document.getElementById('pm-opt-'+i).classList.toggle('active',i===n)); updatePremed()}
+function toggleBusco(n){buscoState[n]=!buscoState[n]; const btn=document.getElementById('busco-'+n); btn.classList.toggle('on',buscoState[n]); btn.textContent=buscoState[n]?'Busco 10mg IV ✓':'Busco 10mg IV'; updatePremed()}
+function updatePremed(){const box=document.getElementById('premed-output'), copyBtn=document.getElementById('btn-copy-premed'); if(!activePremedOption){box.textContent='Select an option on the left'; copyBtn.disabled=true; return;} let text=''; if(activePremedOption===4){text='Butylscopolamine 10 mg IM'} else {const d=premedDrugs[activePremedOption], prop=document.getElementById(d.propId).value, parts=[]; if(buscoState[activePremedOption]) parts.push('Butylscopolamine 10 mg IV'); parts.push(`Dormicum ${d.dorm} mg IV`); parts.push(`Rapifen ${d.rapi} mg IV`); if(prop) parts.push(`Propofol ${prop} mg IV`); text=parts.join(' + ')} box.textContent=text; copyBtn.disabled=false}
+function calcBBPS(){const r=Number(document.getElementById('bbpsR').value||0), t=Number(document.getElementById('bbpsT').value||0), l=Number(document.getElementById('bbpsL').value||0); const any=document.getElementById('bbpsR').value||document.getElementById('bbpsT').value||document.getElementById('bbpsL').value; document.getElementById('bbpsTotal').value=any?(r+t+l):''; updatePrepOutput()}
+function updatePrepOutput(){const agent=getSelected('agent'), quality=getSelected('quality'), total=document.getElementById('bbpsTotal').value, r=document.getElementById('bbpsR').value||'-', t=document.getElementById('bbpsT').value||'-', l=document.getElementById('bbpsL').value||'-'; const out=document.getElementById('prep-output'), btn=document.getElementById('btn-copy-prep'), lines=[]; if(agent) lines.push(`Bowel preparation agent: ${agent}`); if(quality) lines.push(`Bowel preparation quality: ${quality}`); if(total) lines.push(`BBPS: right ${r} / transverse ${t} / left ${l}; total ${total}`); if(lines.length){out.textContent=lines.join('\n'); btn.disabled=false}else{out.textContent='選擇 prep agent、BBPS 與 prep quality 後，這裡會顯示摘要。'; btn.disabled=true}}
+function parseTimeToSeconds(v){if(!v) return null; const p=v.split(':').map(Number); return p[0]*3600+p[1]*60+(p[2]||0)}
+function formatDuration(s){if(s==null||Number.isNaN(s)) return '--'; const m=Math.floor(s/60), sec=s%60; return `${m} min ${sec} sec`}
+function toHMS(s){if(s==null||Number.isNaN(s)) return '--'; const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60; return [h,m,sec].map(v=>String(v).padStart(2,'0')).join(':')}
+function diffSeconds(a,b){if(a==null||b==null) return null; let d=b-a; if(d<0) d+=24*3600; return d}
+function calcTimes(){const start=parseTimeToSeconds(document.getElementById('startTime').value), cecal=parseTimeToSeconds(document.getElementById('cecalTime').value), splenic=parseTimeToSeconds(document.getElementById('splenicTime').value), end=parseTimeToSeconds(document.getElementById('endTime').value); const insertion=diffSeconds(start,cecal), proximal=diffSeconds(cecal,splenic), withdrawal=diffSeconds(cecal,end); document.getElementById('insertionTime').textContent=formatDuration(insertion); document.getElementById('proximalTime').textContent=formatDuration(proximal); document.getElementById('withdrawalTime').textContent=formatDuration(withdrawal); const flag=document.getElementById('withdrawalFlag'); if(withdrawal==null){flag.textContent='待計算'; flag.className='badge warn'} else if(withdrawal>=360){flag.textContent='符合'; flag.className='badge ok'} else {flag.textContent='未達 6 分鐘'; flag.className='badge warn'} const out=document.getElementById('timing-output'), btn=document.getElementById('btn-copy-timing'), lines=[], startT=document.getElementById('startTime').value, cecalT=document.getElementById('cecalTime').value, splenicT=document.getElementById('splenicTime').value, endT=document.getElementById('endTime').value; if(startT) lines.push(`Procedure start: ${startT}`); if(cecalT) lines.push(`Cecum / deepest point reached: ${cecalT}`); if(splenicT) lines.push(`Splenic flexure reached: ${splenicT}`); if(endT) lines.push(`Procedure end: ${endT}`); if(insertion!=null) lines.push(`Intubation time: ${toHMS(insertion)}`); if(proximal!=null&&splenicT) lines.push(`Proximal colon inspection time: ${toHMS(proximal)}`); if(withdrawal!=null) lines.push(`Withdrawal time: ${toHMS(withdrawal)}`); if(lines.length){out.textContent=lines.join('\n'); btn.disabled=false}else{out.textContent='輸入檢查時間後，這裡會顯示摘要。'; btn.disabled=true}}
+function addLesion(){lesionCount+=1; const wrap=document.createElement('div'); wrap.className='lesion-card'; wrap.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;"><h3>病灶 ${lesionCount}</h3><button type="button" class="secondary small-btn" onclick="this.closest('.lesion-card').remove();generateLesionOutputs();">刪除</button></div><div class="form-grid" style="margin-top:10px;"><div class="field span-3"><label>位置</label><select class="lesion-location" onchange="generateLesionOutputs()"><option value=""></option><option value="cecum">cecum</option><option value="ascending colon">ascending colon</option><option value="hepatic flexure">hepatic flexure</option><option value="transverse colon">transverse colon</option><option value="splenic flexure">splenic flexure</option><option value="descending colon">descending colon</option><option value="sigmoid colon">sigmoid colon</option><option value="rectosigmoid junction">rectosigmoid junction</option><option value="rectum">rectum</option></select></div><div class="field span-3"><label>距肛門距離 (cm)</label><input class="lesion-dist" type="number" min="0" oninput="autoSelectLocation(this.closest('.lesion-card'));generateLesionOutputs()"></div><div class="field span-2"><label>尺寸 (mm)</label><input class="lesion-size" type="number" min="0" oninput="generateLesionOutputs()"></div><div class="field span-2"><label>數量</label><input class="lesion-count" type="number" min="1" value="1" oninput="generateLesionOutputs()"></div><div class="field span-2"><label>Morphology</label><select class="lesion-morphology" onchange="generateLesionOutputs()"><option value=""></option><option>Is</option><option>Ip</option><option>Isp</option><option>IIa</option><option>IIb</option><option>IIc</option><option>III</option><option>LST-G</option><option>LST-NG</option></select></div><div class="field span-3"><label>表面分類</label><select class="lesion-surface" onchange="generateLesionOutputs()"><option value=""></option><option>NICE 1</option><option>NICE 2</option><option>NICE 3</option><option>JNET 1</option><option>JNET 2A</option><option>JNET 2B</option><option>JNET 3</option></select></div><div class="field span-3"><label>病灶處理</label><select class="lesion-action" onchange="generateLesionOutputs()"><option value=""></option><option>Biopsy</option><option>Cold snare</option><option>Hot snare</option><option>EMR</option><option>ESD</option><option>No removal</option><option>Refer for treatment</option></select></div><div class="field span-3"><label>Hemoclip 數</label><input class="lesion-clips" type="number" min="0" oninput="generateLesionOutputs()"></div><div class="field span-3"><label>臨床印象</label><select class="lesion-impression" onchange="generateLesionOutputs()"><option value=""></option><option>Adenoma</option><option>Serrated lesion</option><option>Hyperplastic polyp</option><option>Suspicious carcinoma</option><option>Subepithelial lesion</option><option>Inflammatory lesion</option></select></div><div class="field span-12"><label>補充描述</label><input class="lesion-note" oninput="generateLesionOutputs()"></div></div>`; document.getElementById('lesionContainer').appendChild(wrap); generateLesionOutputs()}
+function autoSelectLocation(card){const dist=parseInt(card.querySelector('.lesion-dist').value,10); if(!isNaN(dist)){let loc=''; if(dist>=75) loc='cecum'; else if(dist>=61) loc='ascending colon'; else if(dist===60) loc='hepatic flexure'; else if(dist>=41) loc='transverse colon'; else if(dist===40) loc='splenic flexure'; else if(dist>=30) loc='descending colon'; else if(dist>=20) loc='sigmoid colon'; else loc='rectum'; card.querySelector('.lesion-location').value=loc}}
+function getAdj(loc){const l=LOCATIONS.find(x=>x.value===loc); return l?l.adjective:loc}
+function generateLesionOutputs(){const cards=[...document.querySelectorAll('.lesion-card')], findings=[], summary=[]; let seq=1; cards.forEach(card=>{const loc=card.querySelector('.lesion-location').value, dist=card.querySelector('.lesion-dist').value, size=card.querySelector('.lesion-size').value, count=card.querySelector('.lesion-count').value||'1', morph=card.querySelector('.lesion-morphology').value, surface=card.querySelector('.lesion-surface').value, action=card.querySelector('.lesion-action').value, clips=card.querySelector('.lesion-clips').value, impression=card.querySelector('.lesion-impression').value, note=card.querySelector('.lesion-note').value.trim(); if(!(loc||dist||size||morph||action||impression||note)) return; const plural=String(count)!=='1'?'s':''; let proc=''; if(action==='Biopsy') proc=' Biopsy done.'; if(action==='Cold snare') proc=clips?` Cold snare polypectomy done and ${clips} hemoclip applied for wound closure.`:' Cold snare polypectomy done.'; if(action==='Hot snare') proc=clips?` Hot snare polypectomy done and ${clips} hemoclip applied.`:' Hot snare polypectomy done.'; if(action==='EMR') proc=clips?` EMR done and ${clips} hemoclip applied.`:' EMR done.'; if(action==='ESD') proc=clips?` ESD done and ${clips} hemoclip applied.`:' ESD done.'; if(action==='No removal') proc=' No removal performed.'; if(action==='Refer for treatment') proc=' Referred for further treatment.'; findings.push(`${seq}. ${count} ${size||'___'}mm ${morph||''} lesion${plural} noted at ${dist||'___'} cm from anal verge (${loc||'unspecified location'}).${surface?` Surface classification: ${surface}.`:''}${impression?` Impression: ${impression}.`:''}${proc}${note?` Note: ${note}.`:''}`); summary.push(`${seq}. ${getAdj(loc||'unspecified')} lesion${plural}, ${morph||'morphology unspecified'}, ${size||'___'} mm${action?`, s/p ${action}`:''}.`); seq++}); document.getElementById('findings-output').textContent=findings.length?findings.join('\n'):'填寫病灶資料後，這裡會自動產生 findings。'; document.getElementById('summary-output').textContent=summary.length?summary.join('\n'):'填寫病灶資料後，這裡會自動產生 summary。'; document.getElementById('btn-copy-findings').disabled=!findings.length; document.getElementById('btn-copy-summary').disabled=!summary.length}
+function generateAllOutputs(){updatePremed(); updatePrepOutput(); calcTimes(); generateLesionOutputs(); const lines=['【大腸鏡結構化報告】',`病歷號碼：${document.getElementById('patientId').value||''}`,`姓名：${document.getElementById('name').value||''}    性別：${document.getElementById('sex').value||''}    年齡：${document.getElementById('age').value||''}`,`檢查日期：${document.getElementById('procedureDate').value||''}    檢查醫師：${document.getElementById('endoscopist').value||''}`,`適應症：${[...checkedValues('indication'),document.getElementById('indicationOther').value].filter(Boolean).join('、')||''}`,`ASA：${document.getElementById('asa').value||''}；抗凝血藥物：${document.getElementById('anticoagulant').value||''}；麻醉方式：${document.getElementById('sedation').value||''}`,'','【Pre-medication】',document.getElementById('premed-output').textContent,'','【Bowel preparation】',document.getElementById('prep-output').textContent,'','【Timing】',document.getElementById('timing-output').textContent,`到達盲腸：${document.getElementById('cecalReached').value||''}`,`完整性：${document.getElementById('completeness').value||''}${document.getElementById('incompleteReason').value?'；原因：'+document.getElementById('incompleteReason').value:''}`,'','【Findings】',document.getElementById('findings-output').textContent,'',`其他發現：${document.getElementById('otherFindings').value||''}`,`內視鏡診斷：${document.getElementById('diagnosis').value||''}`,`追蹤建議：${document.getElementById('recommendation').value||''}`,'','【Summary】',document.getElementById('summary-output').textContent]; document.getElementById('final-output').textContent=lines.join('\n'); document.getElementById('btn-copy-final').disabled=false}
+function copyTextFromElement(id,btn){navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>{const o=btn.textContent; btn.textContent='Copied!'; setTimeout(()=>btn.textContent=o,1500)})}
+function resetAll(){document.querySelectorAll('input,textarea').forEach(el=>{if(el.type==='checkbox') el.checked=false; else el.value=''}); document.querySelectorAll('select').forEach(el=>el.selectedIndex=0); document.querySelectorAll('.toggle-chip').forEach(el=>el.classList.remove('active')); [1,2,3,4].forEach(i=>{const opt=document.getElementById('pm-opt-'+i); if(opt) opt.classList.remove('active')}); [1,2,3].forEach(i=>{buscoState[i]=false; const btn=document.getElementById('busco-'+i); if(btn){btn.classList.remove('on'); btn.textContent='Busco 10mg IV'}}); activePremedOption=null; lesionCount=0; document.getElementById('lesionContainer').innerHTML=''; document.getElementById('bbpsTotal').value=''; document.getElementById('premed-output').textContent='Select an option on the left'; document.getElementById('prep-output').textContent='選擇 prep agent、BBPS 與 prep quality 後，這裡會顯示摘要。'; document.getElementById('timing-output').textContent='輸入檢查時間後，這裡會顯示摘要。'; document.getElementById('findings-output').textContent='填寫病灶資料後，這裡會自動產生 findings。'; document.getElementById('summary-output').textContent='填寫病灶資料後，這裡會自動產生 summary。'; document.getElementById('final-output').textContent='按下上方「更新所有摘要」後，這裡會整理完整報告。'; ['btn-copy-premed','btn-copy-prep','btn-copy-timing','btn-copy-findings','btn-copy-summary','btn-copy-final'].forEach(id=>document.getElementById(id).disabled=true); document.getElementById('insertionTime').textContent='--'; document.getElementById('proximalTime').textContent='--'; document.getElementById('withdrawalTime').textContent='--'; const flag=document.getElementById('withdrawalFlag'); flag.textContent='待計算'; flag.className='badge warn'; addLesion()}
+document.addEventListener('DOMContentLoaded',()=>{addLesion(); if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(console.error)}})
+</script>
+</body></html>
